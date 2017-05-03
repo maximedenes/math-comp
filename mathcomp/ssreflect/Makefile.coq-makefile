@@ -11,12 +11,13 @@ define coqmakefile
 		$$LN $(1)/plugin/$(V)/ssreflect_plugin.mllib .;\
 		EXTRA="ssrmatching.mli ssrmatching.ml4 ssrmatching.v";\
 		MLLIB=ssreflect_plugin.mllib;\
+		$$LN $(1)/plugin/$(V)/ssreflect.ml4 .;\
 	;;\
-	*)\
+	v8.6*)\
 		$$LN $(1)/plugin/$(V)/ssreflect_plugin.mlpack .;\
+		$$LN $(1)/plugin/$(V)/ssreflect.ml4 .;\
 	;;\
 	esac;\
-	$$LN $(1)/plugin/$(V)/ssreflect.ml4 .;\
 	$(COQBIN)coq_makefile -f Make $$MLLIB $$EXTRA -o Makefile.coq)
 endef
 
