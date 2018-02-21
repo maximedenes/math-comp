@@ -112,9 +112,9 @@ Unset Printing Implicit Defensive.
 
 Delimit Scope coq_nat_scope with coq_nat.
 
-Notation "m + n" := (plus m n) : coq_nat_scope.
-Notation "m - n" := (minus m n) : coq_nat_scope.
-Notation "m * n" := (mult m n) : coq_nat_scope.
+Notation "m + n" := (Nat.add m n) : coq_nat_scope.
+Notation "m - n" := (Nat.sub m n) : coq_nat_scope.
+Notation "m * n" := (Nat.mul m n) : coq_nat_scope.
 Notation "m <= n" := (le m n) : coq_nat_scope.
 Notation "m < n" := (lt m n) : coq_nat_scope.
 Notation "m >= n" := (ge m n) : coq_nat_scope.
@@ -132,7 +132,7 @@ Delimit Scope nat_rec_scope with Nrec.
 (* a local bound variable.                                        *)
 
 Notation succn := Datatypes.S.
-Notation predn := Peano.pred.
+Notation predn := Nat.pred.
 
 Notation "n .+1" := (succn n) (at level 2, left associativity,
   format "n .+1") : nat_scope.
@@ -174,7 +174,7 @@ Qed.
 Canonical nat_eqMixin := EqMixin eqnP.
 Canonical nat_eqType := Eval hnf in EqType nat nat_eqMixin.
 
-Implicit Arguments eqnP [x y].
+Arguments eqnP [x y].
 Prenex Implicits eqnP.
 
 Lemma eqnE : eqn = eq_op. Proof. by []. Qed.
@@ -186,7 +186,7 @@ Proof. exact: eq_irrelevance. Qed.
 
 (* Protected addition, with a more systematic set of lemmas.                *)
 
-Definition addn_rec := plus.
+Definition addn_rec := Nat.add.
 Notation "m + n" := (addn_rec m n) : nat_rec_scope.
 
 Definition addn := nosimpl addn_rec.
@@ -194,7 +194,7 @@ Notation "m + n" := (addn m n) : nat_scope.
 
 Lemma addnE : addn = addn_rec. Proof. by []. Qed.
 
-Lemma plusE : plus = addn. Proof. by []. Qed.
+Lemma plusE : Nat.add = addn. Proof. by []. Qed.
 
 Lemma add0n : left_id 0 addn.            Proof. by []. Qed.
 Lemma addSn m n : m.+1 + n = (m + n).+1. Proof. by []. Qed.
@@ -248,14 +248,14 @@ Lemma add4n m : 4 + m = m.+4. Proof. by []. Qed.
 (* Protected, structurally decreasing subtraction, and basic lemmas.  *)
 (* Further properties depend on ordering conditions.                  *)
 
-Definition subn_rec := minus.
+Definition subn_rec := Nat.sub.
 Notation "m - n" := (subn_rec m n) : nat_rec_scope.
 
 Definition subn := nosimpl subn_rec.
 Notation "m - n" := (subn m n) : nat_scope.
 
 Lemma subnE : subn = subn_rec. Proof. by []. Qed.
-Lemma minusE : minus = subn.   Proof. by []. Qed.
+Lemma minusE : Nat.sub = subn.   Proof. by []. Qed.
 
 Lemma sub0n : left_zero 0 subn.    Proof. by []. Qed.
 Lemma subn0 : right_id 0 subn.   Proof. by case. Qed.
@@ -394,7 +394,7 @@ apply: (iffP idP); last by elim: n / => // n _ /leq_trans->.
 elim: n => [|n IHn]; first by case: m.
 by rewrite leq_eqVlt ltnS => /predU1P[<- // | /IHn]; right.
 Qed.
-Implicit Arguments leP [m n].
+Arguments leP [m n].
 
 Lemma le_irrelevance m n le_mn1 le_mn2 : le_mn1 = le_mn2 :> (m <= n)%coq_nat.
 Proof.
@@ -411,7 +411,7 @@ Qed.
 
 Lemma ltP m n : reflect (m < n)%coq_nat (m < n).
 Proof. exact leP. Qed.
-Implicit Arguments ltP [m n].
+Arguments ltP [m n].
 
 Lemma lt_irrelevance m n lt_mn1 lt_mn2 : lt_mn1 = lt_mn2 :> (m < n)%coq_nat.
 Proof. exact: (@le_irrelevance m.+1). Qed.
@@ -828,13 +828,13 @@ Proof. by elim: n m => /= [|n IHn] m; rewrite ?subn0 // IHn subnS. Qed.
 
 (* Multiplication. *)
 
-Definition muln_rec := mult.
+Definition muln_rec := Nat.mul.
 Notation "m * n" := (muln_rec m n) : nat_rec_scope.
 
 Definition muln := nosimpl muln_rec.
 Notation "m * n" := (muln m n) : nat_scope.
 
-Lemma multE : mult = muln.     Proof. by []. Qed.
+Lemma multE : Nat.mul = muln.     Proof. by []. Qed.
 Lemma mulnE : muln = muln_rec. Proof. by []. Qed.
 
 Lemma mul0n : left_zero 0 muln.          Proof. by []. Qed.
@@ -925,19 +925,19 @@ Proof. by rewrite eqn_leq !leq_mul2r -orb_andr -eqn_leq. Qed.
 
 Lemma leq_pmul2l m n1 n2 : 0 < m -> (m * n1 <= m * n2) = (n1 <= n2).
 Proof. by move/prednK=> <-; rewrite leq_mul2l. Qed.
-Implicit Arguments leq_pmul2l [m n1 n2].
+Arguments leq_pmul2l [m n1 n2].
 
 Lemma leq_pmul2r m n1 n2 : 0 < m -> (n1 * m <= n2 * m) = (n1 <= n2).
 Proof. by move/prednK <-; rewrite leq_mul2r. Qed.
-Implicit Arguments leq_pmul2r [m n1 n2].
+Arguments leq_pmul2r [m n1 n2].
 
 Lemma eqn_pmul2l m n1 n2 : 0 < m -> (m * n1 == m * n2) = (n1 == n2).
 Proof. by move/prednK <-; rewrite eqn_mul2l. Qed.
-Implicit Arguments eqn_pmul2l [m n1 n2].
+Arguments eqn_pmul2l [m n1 n2].
 
 Lemma eqn_pmul2r m n1 n2 : 0 < m -> (n1 * m == n2 * m) = (n1 == n2).
 Proof. by move/prednK <-; rewrite eqn_mul2r. Qed.
-Implicit Arguments eqn_pmul2r [m n1 n2].
+Arguments eqn_pmul2r [m n1 n2].
 
 Lemma ltn_mul2l m n1 n2 : (m * n1 < m * n2) = (0 < m) && (n1 < n2).
 Proof. by rewrite lt0n !ltnNge leq_mul2l negb_or. Qed.
@@ -947,11 +947,11 @@ Proof. by rewrite lt0n !ltnNge leq_mul2r negb_or. Qed.
 
 Lemma ltn_pmul2l m n1 n2 : 0 < m -> (m * n1 < m * n2) = (n1 < n2).
 Proof. by move/prednK <-; rewrite ltn_mul2l. Qed.
-Implicit Arguments ltn_pmul2l [m n1 n2].
+Arguments ltn_pmul2l [m n1 n2].
 
 Lemma ltn_pmul2r m n1 n2 : 0 < m -> (n1 * m < n2 * m) = (n1 < n2).
 Proof. by move/prednK <-; rewrite ltn_mul2r. Qed.
-Implicit Arguments ltn_pmul2r [m n1 n2].
+Arguments ltn_pmul2r [m n1 n2].
 
 Lemma ltn_Pmull m n : 1 < n -> 0 < m -> m < n * m.
 Proof. by move=> lt1n m_gt0; rewrite -{1}[m]mul1n ltn_pmul2r. Qed.
@@ -1436,7 +1436,7 @@ End NatTrec.
 
 Notation natTrecE := NatTrec.trecE.
 
-Lemma eq_binP : Equality.axiom Ndec.Neqb.
+Lemma eq_binP : Equality.axiom N.eqb.
 Proof.
 move=> p q; apply: (iffP idP) => [|<-]; last by case: p => //; elim.
 by case: q; case: p => //; elim=> [p IHp|p IHp|] [q|q|] //=; case/IHp=> ->.
@@ -1490,12 +1490,12 @@ case=> //=; elim=> //= p; case: (nat_of_pos p) => //= n [<-].
 by rewrite natTrecE addnS /= addnS {2}addnn; elim: {1 3}n.
 Qed.
 
-Lemma nat_of_succ_gt0 p : Psucc p = p.+1 :> nat.
+Lemma nat_of_succ_gt0 p : Pos.succ p = p.+1 :> nat.
 Proof. by elim: p => //= p ->; rewrite !natTrecE. Qed.
 
 Lemma nat_of_addn_gt0 p q : (p + q)%positive = p + q :> nat.
 Proof.
-apply: @fst _ (Pplus_carry p q = (p + q).+1 :> nat) _.
+apply: @fst _ (Pos.add_carry p q = (p + q).+1 :> nat) _.
 elim: p q => [p IHp|p IHp|] [q|q|] //=; rewrite !natTrecE //;
   by rewrite ?IHp ?nat_of_succ_gt0 ?(doubleS, doubleD, addn1, addnS).
 Qed.
@@ -1542,7 +1542,7 @@ Lemma nat_semi_ring : semi_ring_theory 0 1 addn muln (@eq _).
 Proof. exact: mk_srt add0n addnC addnA mul1n mul0n mulnC mulnA mulnDl. Qed.
 
 Lemma nat_semi_morph :
-  semi_morph 0 1 addn muln (@eq _) 0%num 1%num Nplus Nmult pred1 nat_of_bin.
+  semi_morph 0 1 addn muln (@eq _) 0%num 1%num N.add N.mul pred1 nat_of_bin.
 Proof.
 by move: nat_of_add_bin nat_of_mul_bin; split=> //= m n; move/eqP->.
 Qed.
